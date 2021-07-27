@@ -1,0 +1,243 @@
+<template>
+  <div id="center-cont">
+    <div class="top-font">
+      <div v-for="(item,index) in top" :key="index" @click="topClick($event,index)">
+        <div class="a-flex">
+          <div :class="[(currentIndex == index) && isActive ? 'active' : '','font-a']">{{item}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line">
+      <!-- <line-draw/> -->
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="top-font bottom-font">
+      <div v-for="(item,index) in bottom" :key="index" @click="bottomClick($event,index)">
+        <div class="a-flex">
+          <div :class="[(currentIndex1 == index) && !isActive ? 'active' : '','font-a']">{{item}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+
+  export default {
+    name:"centerContent",
+    data() {
+      return {
+        top:['a','b','c','d'],
+        bottom:['0','1','2','3'],
+        // topX:[98+88,469+88,840+88,1211+88],
+        topX:[],
+        bottomX:[],
+        currentIndex:null,
+        currentIndex1:null,
+        isActive:true,
+        isDraw:true,
+        topIndex:NaN,
+        bottomIndex:NaN
+      }
+    },
+    components: {
+      
+    },
+    mounted() {
+
+    },
+    methods:{
+      topClick(event,index){
+        var offset1=event.path[0].offsetLeft+88
+        // 变化样式
+        this.currentIndex = index
+        this.isActive = true
+
+        setTimeout(() =>{
+          this.currentIndex=-1
+        },3000)
+
+        // 连线逻辑
+        if(this.topX.length < 1){
+          this.topX.push(offset1)
+        }else
+        {
+          if(this.topX.indexOf(offset1) !=-1){
+            // 临时
+            // this.topX.splice(this.topX.indexOf(offset1),1)
+            let xx=new Number()
+            xx = this.topX.indexOf(offset1)
+            this.topIndex=xx
+            // this.topX.push(offset1)
+            console.log('ops',this.topX);
+          }
+          else {
+            console.log("没有重复");
+            this.topX.push(offset1);
+          }
+        }
+        
+        this.$emit('topClick', this.topX);
+        // if(this.isDraw){
+          this.canvasMount(this.topX,this.bottomX)
+        //   this.isDraw=!this.isDraw
+        // }
+
+
+    },
+      bottomClick(event,index){
+        var offset2=event.path[0].offsetLeft+88
+        this.currentIndex1 = index
+        this.isActive = false
+        // this.bottomX.push(offset2)
+        // this.canvasMount(this.topX,this.bottomX)
+
+        setTimeout(() =>{
+          this.currentIndex1=-1
+        },3000)
+
+         if(this.bottomX.length < 1){
+          this.bottomX.push(offset2)
+        }else
+        {
+          if(this.bottomX.indexOf(offset2) !=-1){
+            // 临时
+            // this.bottomX.splice(this.bottomX.indexOf(offset2),1)
+            // this.bottomX.push(offset2)
+            let yy=new Number()
+            yy=this.bottomX.indexOf(offset2)
+            this.bottomIndex=yy
+            // console.log(this.bottomX);
+          }
+          else {
+            console.log("没有重复");
+            this.bottomX.push(offset2)
+          }
+        } 
+
+         this.$emit('bottomClick', this.bottomX);
+
+        this.canvasMount(this.topX,this.bottomX)
+       
+
+      },
+      canvasMount(x1,x2){
+        if(this.topX && this.bottomX){
+          console.log(x1,x2);
+          var canvas = document.getElementById("canvas");
+          var ctx = canvas.getContext("2d");
+          canvas.width=1288;
+          canvas.height=150;
+          ctx.strokeStyle = "red";
+          ctx.lineWidth=3;
+
+          // console.log(this.topIndex);
+          
+          
+          if(this.topIndex == 0 && this.bottomIndex == 0){
+              if(this.topIndex ==0){
+                x2.shift()
+                console.log("进入0循环");
+                delete this.topIndex;
+              }
+              if(this.bottomIndex ==0){
+                x1.shift()
+                console.log("进入0循环");
+                delete this.bottomIndex;
+              }
+            }
+
+          if(this.topIndex && this.bottomIndex){
+            
+            x1.splice(this.bottomIndex,1);
+            x2.splice(this.topIndex,1);
+            delete this.topIndex;
+            delete this.bottomIndex;
+
+          }
+
+          // switch (this.topIndex && this.bottomIndex) {
+          //   case (this.topIndex ==0) :
+          //     x2.shift()
+          //   delete this.topIndex;
+          //       delete this.bottomIndex;
+          //   case (this.bottomIndex == 0) :
+          //     x1.shift()
+          //     delete this.topIndex;
+          //     delete this.bottomIndex;
+            
+          //   case (this.topIndex!=0 && this.bottomIndex!=0) :
+          //      x1.splice(this.bottomIndex,1);
+          //       x2.splice(this.topIndex,1);
+          //       delete this.topIndex;
+          //       delete this.bottomIndex;
+          // }
+
+           for(let i=0;i<x1.length;i++){
+            //  for(let j=0;j<x2.length;j++){
+            //   //  if(x1.indexOf(x1.slice(-1))){
+            //   //    if(x2.indexOf(x2.slice(-1))){
+            //   //      x2.splice(x2.indexOf(x2.slice(-1))-1,1)
+            //   //    }
+            //   //  }
+            //   // console.log(x1.indexOf(x1.pop()));
+            //   // break
+            //  }
+            // ctx.beginPath();
+            ctx.moveTo(x1[i],0);
+            ctx.lineTo(x2[i], 150);
+            ctx.stroke();
+          }
+
+            // ctx.beginPath();
+            // ctx.moveTo(x1[x1.length-1],0);
+            // ctx.lineTo(x2[x2.length-1], 150);
+            // ctx.stroke();
+        }
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  * {
+    padding: 0;
+    margin: 0;
+    clear: both;
+  }
+
+  .top-font {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  .a-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .font-a {
+    flex: 1;
+    width: 10rem;
+    height: 5.5rem;
+    border: 0.5rem solid blue;
+    border-radius: 10px;
+    background: white;
+    text-align: center;
+  }
+
+
+  .line {
+    display: flex;
+    width: 100%;
+    height: 30%;
+  }
+
+  .active {
+    border-color: orange;
+  }
+</style>
